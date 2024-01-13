@@ -11,17 +11,24 @@ import requests
 from filmsearch import MovieSearch
 from flask import flash
 
-# Loads .env, creats app, applys CSRF key and db url
+# Load .env
 load_dotenv()
+# Creating an Instance of the Flask Class; Tracks configurations, URL rules, template locations, etc.
 app = Flask(__name__)
+# Set Secret Key for (CSRF) Cross-site request forgery
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+# Set DB Key
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQL_DATABASE')
+# Create Instance for BootStrap
 bootstrap = Bootstrap5(app)
+# Create Instance for DB; SQLAlchemy
 db = SQLAlchemy(app)
 
 
-# Create movie database
+# Define class called "Movie", db.Model maps to table in SQLAch called "Model"
 class Movie(db.Model):
+    # Each attribute below represents a column wthin the database table.
+    # primary_key=True indicates uniquely ID; id is column name
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80), unique=True, nullable=False)
     year = db.Column(db.Integer, nullable=False)
@@ -30,12 +37,15 @@ class Movie(db.Model):
     ranking = db.Column(db.Integer)
     review = db.Column(db.String(80))
     img_url = db.Column(db.String(80), nullable=False)
-
+    # __repr__ defines how instances are represented as strings (supporting debug)
+    # Printing Movie as an Object returns the f sting below
     def __repr__(self):
         return f"< Movie {self.title} ranked: {self.ranking}>"
 
-# WTForm; Used for adding customer ranking, rating and review. Gets called @Edit
+# WTForm; Define class called "RateMovieForm", inherit (FlaskForm)
+# Used for adding customer ranking, rating and review; Used within Edit route
 class RateMovieForm(FlaskForm):
+    # DataRequired() ensures user completes that section
     rating = StringField('Your rating out of 10 e.g. 7.5', validators=[DataRequired()])
     review = StringField('Your Review', validators=[DataRequired()])
     ranking = IntegerField('Your new ranking', validators=[DataRequired()])
@@ -46,9 +56,11 @@ class AddMovie(FlaskForm):
     title = StringField('Movie Title', validators=[DataRequired()])
     sumit = SubmitField("Add Movie")
 
-# Sets app content for all db interactions
+# Sets app with context() method allowing globally accessible
 with app.app_context():
+    # Checks current state of DB, creates tables if non-existent 
     db.create_all()
+    # Not Best for Production builds *** Use Flask-Migrate / Alembic
 
 
 @app.route("/")
@@ -123,6 +135,8 @@ def delete():
     db.session.commit()
     return redirect(url_for('home'))
 
-# Runs app in debug
+#  Checks to see IF file has been ran directly e.g. py main.py; True if so
+#  if the file is imported as a module, statment is False
 if __name__ == '__main__':
+    # app refers to flask instance called above
     app.run(debug=True)
