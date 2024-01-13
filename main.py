@@ -1,12 +1,16 @@
 from flask import Flask, render_template, redirect, url_for, request
+from forms import RegistrationForm, LoginForm, RateMovieForm, AddMovie
 from dotenv import load_dotenv
 import os
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from wtforms import StringField, SubmitField, IntegerField
 from wtforms.validators import DataRequired
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import relationship
+from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 from filmsearch import MovieSearch
 from flask import flash
@@ -21,15 +25,42 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQL_DATABASE')
 # Create Instance for BootStrap
 bootstrap = Bootstrap5(app)
+# Create login instance,
+login_manager = LoginManager()
+    # initialises with app
+login_manager.init_app(app)
+    # Redirects to here, creates endpoint
+login_manager.login_view = "login"
 # Create Instance for DB; SQLAlchemy
 db = SQLAlchemy(app)
+
+# Create a user_loader callback
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
+
+# Create user DB here
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+    first_name = db.Column(db.String(1000))
+    last_name = db.Column(db.String(1000))
+    is_admin = db.Column(db.Integer, default=0)
+    movies = relationship("Movie", back_populates="user")
+
 
 
 # Define class called "Movie", db.Model maps to table in SQLAch called "Model"
 class Movie(db.Model):
     # Each attribute below represents a column wthin the database table.
     # primary_key=True indicates uniquely ID; id is column name
+    __tablename__ = "movie"
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user = relationship("User", back_populates="movies")
     title = db.Column(db.String(80), unique=True, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(80), nullable=False)
@@ -42,20 +73,6 @@ class Movie(db.Model):
     def __repr__(self):
         return f"< Movie {self.title} ranked: {self.ranking}>"
 
-# WTForm; Define class called "RateMovieForm", inherit (FlaskForm)
-# Used for adding customer ranking, rating and review; Used within Edit route
-class RateMovieForm(FlaskForm):
-    # DataRequired() ensures user completes that section
-    rating = StringField('Your rating out of 10 e.g. 7.5', validators=[DataRequired()])
-    review = StringField('Your Review', validators=[DataRequired()])
-    ranking = IntegerField('Your new ranking', validators=[DataRequired()])
-    submit = SubmitField("Update")
-
-# WTForm for Movie API search. Gets called @add_movie
-class AddMovie(FlaskForm):
-    title = StringField('Movie Title', validators=[DataRequired()])
-    sumit = SubmitField("Add Movie")
-
 # Sets app with context() method allowing globally accessible
 with app.app_context():
     # Checks current state of DB, creates tables if non-existent 
@@ -67,6 +84,73 @@ with app.app_context():
 def home():
     all_movies = Movie.query.order_by(Movie.rating.desc()).all()
     return render_template("index.html", data=all_movies)
+
+# Route for Registering Users
+@app.route("/register", methods=["POST", "GET"])
+def register():
+    # Create form variable (imported from forms.py)
+    form = RegistrationForm()
+    # Check IF POST and form correct
+    if request.method == "POST" and form.validate():
+        # Check passwords match, return wardning if false
+        if form.password.data != form.password_confirm.data:
+            flash("Password do not match, Please try again", "danger")
+            return redirect(url_for("register"))
+        # Hash password
+        hashed_password = generate_password_hash(
+            form.password.data,
+            method="pbkdf2:sha256",
+            salt_length=8
+        )
+        # Crate new user w/ form data
+        new_user = User(
+            email=form.email.data,
+            username=form.username.data,
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            password=hashed_password
+        )
+        # Utilise try/except adding user or returning with error
+        try:
+            # Create user and add
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            flash("You have registered.", "info")
+            return redirect(url_for("home"))
+        # If user already within database, rollback and redirect
+        except IntegrityError:
+            db.session.rollback()
+            flash("That User is already Registered, Please try and login.", "danger")
+            return redirect(url_for("login"))
+    # Render registration form
+    return render_template("register.html", form=form)
+
+@app.route('/login', methods=["POST", "GET"])
+def login():
+    form = LoginForm()
+    # Ceck if user is already logged in, if so redirect (blocks access)
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    # Check if user POST login details
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        user = User.query.filter_by(email=email).first()
+        # Check user stored password w/ entered 
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            flash("You are Now Logged In", "info")
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('home'))
+        # Action when user not in DB (does not exist), redirecting to registration
+        elif not user:
+            flash("That Email does not exist, Please register", "danger")
+            return redirect(url_for("register"))
+        else:
+            flash('Invalid Username or Password', 'danger')
+            return redirect(url_for("login"))
+    return render_template("login.html", form=form)
 
 # calls WTForm (AddMovie), passing data into API (filmsearch), renders results @ /select
 @app.route("/add", methods=["POST", "GET"])
