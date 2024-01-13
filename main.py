@@ -1,12 +1,15 @@
 from flask import Flask, render_template, redirect, url_for, request
+from forms import RegistrationForm, LoginFor
 from dotenv import load_dotenv
 import os
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from wtforms import StringField, SubmitField, IntegerField
 from wtforms.validators import DataRequired
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import relationship
 import requests
 from filmsearch import MovieSearch
 from flask import flash
@@ -21,15 +24,42 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQL_DATABASE')
 # Create Instance for BootStrap
 bootstrap = Bootstrap5(app)
+# Create login instance,
+login_manager = LoginManager()
+    # initialises with app
+login_manager.init_app(app)
+    # Redirects to here, creates endpoint
+login_manager.login_view = "login"
 # Create Instance for DB; SQLAlchemy
 db = SQLAlchemy(app)
+
+# Create a user_loader callback
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, user_id)
+
+# Create user DB here
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(100))
+    first_name = db.Column(db.String(1000))
+    last_name = db.Column(db.String(1000))
+    is_admin = db.Column(db.Integer, default=0)
+    movies = relationship("Movie", back_poulates="user")
+
 
 
 # Define class called "Movie", db.Model maps to table in SQLAch called "Model"
 class Movie(db.Model):
     # Each attribute below represents a column wthin the database table.
     # primary_key=True indicates uniquely ID; id is column name
+    __tablename__ = "movie"
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user = relationship("User", back_populates="movies")
     title = db.Column(db.String(80), unique=True, nullable=False)
     year = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(80), nullable=False)
