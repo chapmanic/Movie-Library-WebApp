@@ -230,4 +230,4 @@ def delete():
 #  if the file is imported as a module, statment is False
 if __name__ == '__main__':
     # app refers to flask instance called above
-    app.run(debug=True)
+    app.run(debug=True, port=5002)
