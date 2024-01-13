@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request
-from forms import RegistrationForm, LoginFor
+from forms import RegistrationForm, LoginForm, RateMovieForm, AddMovie
+from models import Movie, User
 from dotenv import load_dotenv
 import os
 from flask_bootstrap import Bootstrap5
@@ -38,53 +39,7 @@ db = SQLAlchemy(app)
 def load_user(user_id):
     return db.session.get(User, user_id)
 
-# Create user DB here
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-    first_name = db.Column(db.String(1000))
-    last_name = db.Column(db.String(1000))
-    is_admin = db.Column(db.Integer, default=0)
-    movies = relationship("Movie", back_poulates="user")
-
-
-
-# Define class called "Movie", db.Model maps to table in SQLAch called "Model"
-class Movie(db.Model):
-    # Each attribute below represents a column wthin the database table.
-    # primary_key=True indicates uniquely ID; id is column name
-    __tablename__ = "movie"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    user = relationship("User", back_populates="movies")
-    title = db.Column(db.String(80), unique=True, nullable=False)
-    year = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.String(80), nullable=False)
-    rating = db.Column(db.Float(5))
-    ranking = db.Column(db.Integer)
-    review = db.Column(db.String(80))
-    img_url = db.Column(db.String(80), nullable=False)
-    # __repr__ defines how instances are represented as strings (supporting debug)
-    # Printing Movie as an Object returns the f sting below
-    def __repr__(self):
-        return f"< Movie {self.title} ranked: {self.ranking}>"
-
-# WTForm; Define class called "RateMovieForm", inherit (FlaskForm)
-# Used for adding customer ranking, rating and review; Used within Edit route
-class RateMovieForm(FlaskForm):
-    # DataRequired() ensures user completes that section
-    rating = StringField('Your rating out of 10 e.g. 7.5', validators=[DataRequired()])
-    review = StringField('Your Review', validators=[DataRequired()])
-    ranking = IntegerField('Your new ranking', validators=[DataRequired()])
-    submit = SubmitField("Update")
-
-# WTForm for Movie API search. Gets called @add_movie
-class AddMovie(FlaskForm):
-    title = StringField('Movie Title', validators=[DataRequired()])
-    sumit = SubmitField("Add Movie")
+# REMOVED FORM HERE DB
 
 # Sets app with context() method allowing globally accessible
 with app.app_context():
@@ -97,6 +52,13 @@ with app.app_context():
 def home():
     all_movies = Movie.query.order_by(Movie.rating.desc()).all()
     return render_template("index.html", data=all_movies)
+
+@app.route("/register", methods=["POST", "GET"])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        pass
+    return render_template("register.html", form=form)
 
 # calls WTForm (AddMovie), passing data into API (filmsearch), renders results @ /select
 @app.route("/add", methods=["POST", "GET"])
