@@ -152,6 +152,13 @@ def login():
             return redirect(url_for("login"))
     return render_template("login.html", form=form)
 
+# Logout route, Only access if logged in
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
 # calls WTForm (AddMovie), passing data into API (filmsearch), renders results @ /select
 @app.route("/add", methods=["POST", "GET"])
 def add_movie():
