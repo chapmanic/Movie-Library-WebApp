@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% from 'bootstrap5/form.html' import render_form %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Login{% endblock %}
 {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="content">
-  <h1 class="heading">Register User</h1>
+  <h1 class="heading">Login</h1>
     {{ render_form(form) }}
   </div>
 {% endblock %}
