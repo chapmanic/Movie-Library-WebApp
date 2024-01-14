@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, SelectField, IntegerField
 from wtforms.validators import DataRequired, URL
+from flask_wtf.file import FileField, FileAllowed
 
 # RegisterForm to register new users
 # Create registration form
@@ -11,6 +12,9 @@ class RegistrationForm(FlaskForm):
     password_confirm = PasswordField('Confirm Password', validators=[DataRequired()])
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name', validators=[DataRequired()])
+    avatar_img = FileField("Profile Picture", validators=[
+        FileAllowed(["jpg", "png"], 'Images only')
+    ])
     submit = SubmitField('Register')
 
 # LoginForm to login existing users

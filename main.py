@@ -11,10 +11,11 @@ from wtforms.validators import DataRequired
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import requests
 from filmsearch import MovieSearch
 from flask import flash
-from datetime import date, datetime
+from datetime import date
 
 # Load .env
 load_dotenv()
@@ -24,6 +25,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 # Set DB Key
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQL_DATABASE')
+# Set image file location (.env) & Set MAX size for content
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max size
+
 # Create Instance for BootStrap
 bootstrap = Bootstrap5(app)
 # Create login instance,
@@ -51,6 +56,7 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(1000))
     is_admin = db.Column(db.Integer, default=0)
     date = db.Column(db.String(250), nullable=False)
+    avatar_img = db.Column(db.String(250), nullable=True)
     movies = relationship("Movie", back_populates="user")
 
 
@@ -82,10 +88,16 @@ with app.app_context():
     # Not Best for Production builds *** Use Flask-Migrate / Alembic
 
 
-@app.route("/")
+@app.route("/mymovies", methods=["POST", "GET"])
+def mymovies():
+    all_movies = db.session.execute(db.select(Movie).where(Movie.user_id == current_user.id)).scalars()
+    print(all_movies)
+    # all_movies = Movie.query.order_by(Movie.rating.desc()).all()
+    return render_template("mymovies.html", data=all_movies)
+
+@app.route("/", methods=["POST", "GET"])
 def home():
-    all_movies = Movie.query.order_by(Movie.rating.desc()).all()
-    return render_template("index.html", data=all_movies)
+    return render_template("index.html")
 
 # Route for Registering Users
 @app.route("/register", methods=["POST", "GET"])
@@ -113,6 +125,12 @@ def register():
             password=hashed_password,
             date=date.today().strftime("%B %d, %Y"),
         )
+        # Save image to file, add name to User table
+        if form.avatar_img.data:
+            avatar_img_file = form.avatar_img.data
+            filename = secure_filename(avatar_img_file.filename)
+            avatar_img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            new_user.avatar_img = filename
         # Utilise try/except adding user or returning with error
         try:
             # Create user and add
@@ -182,6 +200,7 @@ def create_movie_entry():
     api_data = api_ext.more_details(movie_id)
     img_url_end = api_data["poster_path"]
     new_movie = Movie(
+        user_id=current_user.id,
         title=api_data["original_title"],
         year=api_data["release_date"],
         description=api_data["overview"],
@@ -199,11 +218,11 @@ def create_movie_entry():
     except IntegrityError:
         db.session.rollback()
         flash("That Film is already in your Library, Please try again.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('mymovies'))
     except Exception as e:
         db.session.rollback()
         print(f"An unexpected error occurred: {str(e)}")
-        return redirect(url_for('home', status=True))
+        return redirect(url_for('mymovies', status=True))
     return redirect(url_for('edit', id=new_movie_id))
 
 # Allows user to edit data of existing film and/or newly added film.
