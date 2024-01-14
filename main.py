@@ -4,15 +4,11 @@ from dotenv import load_dotenv
 import os
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
-from wtforms import StringField, SubmitField, IntegerField
-from wtforms.validators import DataRequired
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-import requests
 from filmsearch import MovieSearch
 from flask import flash
 from datetime import date
@@ -138,7 +134,7 @@ def register():
             db.session.commit()
             login_user(new_user)
             flash("You have registered.", "info")
-            return redirect(url_for("home"))
+            return redirect(url_for("mymovies"))
         # If user already within database, rollback and redirect
         except IntegrityError:
             db.session.rollback()
@@ -163,7 +159,7 @@ def login():
             login_user(user)
             flash("You are Now Logged In", "info")
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+            return redirect(next_page) if next_page else redirect(url_for('mymovies'))
         # Action when user not in DB (does not exist), redirecting to registration
         elif not user:
             flash("That Email does not exist, Please register", "danger")
@@ -215,6 +211,7 @@ def create_movie_entry():
         i = db.session.execute(db.select(Movie).where(Movie.title == api_data["original_title"])).scalar()
         new_movie_id = i.id
         flash("That Film has been added to your Library, Please add another", "info")
+        return redirect(url_for("mymovies"))
     except IntegrityError:
         db.session.rollback()
         flash("That Film is already in your Library, Please try again.", "danger")
@@ -223,7 +220,7 @@ def create_movie_entry():
         db.session.rollback()
         print(f"An unexpected error occurred: {str(e)}")
         return redirect(url_for('mymovies', status=True))
-    return redirect(url_for('edit', id=new_movie_id))
+    # return redirect(url_for('edit', id=new_movie_id))
 
 # Allows user to edit data of existing film and/or newly added film.
 @app.route("/edit", methods=["GET", "POST"])
@@ -236,7 +233,7 @@ def edit():
         movie_to_update.review = form.review.data
         movie_to_update.ranking = form.ranking.data
         db.session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('mymovies'))
     return render_template('edit.html', form=form)
 
 # Allows user to delete entry by db ID, removes all data
@@ -246,7 +243,7 @@ def delete():
     movie_to_delete = db.get_or_404(Movie, movie_id)
     db.session.delete(movie_to_delete)
     db.session.commit()
-    return redirect(url_for('home'))
+    return redirect(url_for('mymovies'))
 
 @app.route("/profile/<int:user_id>", methods=["POST", "GET"])
 @login_required
