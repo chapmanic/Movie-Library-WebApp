@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 from filmsearch import MovieSearch
 from flask import flash
+from datetime import date, datetime
 
 # Load .env
 load_dotenv()
@@ -49,6 +50,7 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(1000))
     last_name = db.Column(db.String(1000))
     is_admin = db.Column(db.Integer, default=0)
+    date = db.Column(db.String(250), nullable=False)
     movies = relationship("Movie", back_populates="user")
 
 
@@ -108,7 +110,8 @@ def register():
             username=form.username.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            password=hashed_password
+            password=hashed_password,
+            date=date.today().strftime("%B %d, %Y"),
         )
         # Utilise try/except adding user or returning with error
         try:
@@ -225,6 +228,16 @@ def delete():
     db.session.delete(movie_to_delete)
     db.session.commit()
     return redirect(url_for('home'))
+
+@app.route("/profile/<int:user_id>", methods=["POST", "GET"])
+@login_required
+def profile(user_id):
+    # form = Create user form
+    user_items = db.get_or_404(User, user_id)
+    # Check if user is auth, if so move on
+    # ceck if form valie (user modifying data, place back into BD)
+    return render_template("userprofile.html")
+
 
 #  Checks to see IF file has been ran directly e.g. py main.py; True if so
 #  if the file is imported as a module, statment is False

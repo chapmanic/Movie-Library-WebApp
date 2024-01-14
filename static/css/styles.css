@@ -53,6 +53,7 @@ p.overview {
 	padding-bottom: 0.5em;
 	margin-bottom: 1rem;
 	position: relative;
+	text-decoration: none;
 }
 
 .heading:after {
@@ -89,6 +90,79 @@ p.overview {
 	perspective: 1000px;
 	margin: 1rem auto;
 	position: relative;
+}
+
+.card-profile {
+    width: 350px;
+    background-color: #e0e0e0;
+    border: none;
+    transition: all 0.5s;
+}
+
+.image img {
+    transition: all 0.5s
+}
+
+.card-profile:hover .image img {
+    transform: scale(1.1)
+}
+
+.name {
+    font-size: 22px;
+    font-weight: bold
+}
+
+.idd {
+    font-size: 14px;
+    font-weight: 600
+}
+
+.idd1 {
+    font-size: 12px
+}
+
+.number {
+    font-size: 22px;
+    font-weight: bold
+}
+
+.follow {
+    font-size: 12px;
+    font-weight: 500;
+    color: #444444
+}
+
+.btn1 {
+    height: 40px;
+    width: 150px;
+    border: none;
+    background-color: #000;
+    color: #aeaeae;
+    font-size: 15px
+}
+
+.text span {
+    font-size: 13px;
+    color: #545454;
+    font-weight: 500
+}
+
+.icons i {
+    font-size: 19px
+}
+
+hr .new1 {
+    border: 1px solid
+}
+
+.join {
+    font-size: 14px;
+    color: #a0a0a0;
+    font-weight: bold
+}
+
+.date {
+    background-color: #ccc
 }
 
 @media screen and (max-width: 800px) {
@@ -185,11 +259,17 @@ p.overview {
 	padding: 0.5em 1em;
 	border-radius: 100px;
 	font: inherit;
-	background: linear-gradient(140deg, #ee1a1a, #e7e7e7);
+	background: linear-gradient(140deg, #ee1a1a, #bd3434);
 	border: none;
 	position: relative;
 	transform-style: preserve-3d;
 	transition: 300ms ease;
+}
+
+.profile-box {
+	display: flex;
+	justify-content: center;
+	background-color: black;
 }
 
 .button:before {

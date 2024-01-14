@@ -5,8 +5,8 @@
     messages %} {% for category, message in messages %}
     <div class="alert alert-{{ category }}">{{ message }}</div>
     {% endfor %} {% endif %} {% endwith %}
-  <h1 class="heading text-decoration=none">My Top 10 Movies</h1>
-  <p class="description">These are my all-time favourite movies.</p>
+  <h1 class="heading">Movie Trackie!</h1>
+  <p class="description">Lookup and store your all-time favourite movies.</p>
   
   <div class="container text-center add">
     <a href="{{ url_for('add_movie') }}" class="button">Add Movie</a>
