@@ -88,10 +88,16 @@ with app.app_context():
     # Not Best for Production builds *** Use Flask-Migrate / Alembic
 
 
-@app.route("/")
+@app.route("/mymovies", methods=["POST", "GET"])
+def mymovies():
+    all_movies = db.session.execute(db.select(Movie).where(Movie.user_id == current_user.id)).scalars()
+    print(all_movies)
+    # all_movies = Movie.query.order_by(Movie.rating.desc()).all()
+    return render_template("mymovies.html", data=all_movies)
+
+@app.route("/", methods=["POST", "GET"])
 def home():
-    all_movies = Movie.query.order_by(Movie.rating.desc()).all()
-    return render_template("index.html", data=all_movies)
+    return render_template("index.html")
 
 # Route for Registering Users
 @app.route("/register", methods=["POST", "GET"])
@@ -194,6 +200,7 @@ def create_movie_entry():
     api_data = api_ext.more_details(movie_id)
     img_url_end = api_data["poster_path"]
     new_movie = Movie(
+        user_id=current_user.id,
         title=api_data["original_title"],
         year=api_data["release_date"],
         description=api_data["overview"],
@@ -211,11 +218,11 @@ def create_movie_entry():
     except IntegrityError:
         db.session.rollback()
         flash("That Film is already in your Library, Please try again.", "danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('mymovies'))
     except Exception as e:
         db.session.rollback()
         print(f"An unexpected error occurred: {str(e)}")
-        return redirect(url_for('home', status=True))
+        return redirect(url_for('mymovies', status=True))
     return redirect(url_for('edit', id=new_movie_id))
 
 # Allows user to edit data of existing film and/or newly added film.

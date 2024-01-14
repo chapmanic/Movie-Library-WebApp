@@ -63,7 +63,7 @@
             <li><a href="{{ url_for('home')}}" class="nav-link px-2 link-dark">Home</a></li>
             <li><a href="#" class="nav-link px-2 link-dark">UK Top 10</a></li>
             {% if current_user.is_authenticated %}
-            <li><a href="{{ url_for('profile', user_id=current_user.id) }}" class="nav-link px-2 link-dark">My Movies</a></li>{% endif %}
+            <li><a href="{{ url_for('mymovies') }}" class="nav-link px-2 link-dark">My Movies</a></li>{% endif %}
           </ul>
           {% if current_user.is_authenticated %} {% if current_user.is_admin %}
           <li class="nav-item">
