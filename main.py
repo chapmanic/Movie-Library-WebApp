@@ -259,4 +259,4 @@ def profile(user_id):
 #  if the file is imported as a module, statment is False
 if __name__ == '__main__':
     # app refers to flask instance called above
-    app.run(debug=True, port=5002)
+    app.run(debug=False)
