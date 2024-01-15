@@ -66,7 +66,7 @@ class Movie(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     user = relationship("User", back_populates="movies")
     title = db.Column(db.String(80), unique=True, nullable=False)
-    year = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.String(30), nullable=True)
     description = db.Column(db.String(80), nullable=False)
     rating = db.Column(db.Float(5))
     ranking = db.Column(db.Integer)
@@ -86,14 +86,20 @@ with app.app_context():
 
 @app.route("/mymovies", methods=["POST", "GET"])
 def mymovies():
-    all_movies = db.session.execute(db.select(Movie).where(Movie.user_id == current_user.id)).scalars()
-    print(all_movies)
-    # all_movies = Movie.query.order_by(Movie.rating.desc()).all()
+    all_movies = db.session.execute(
+        db.select(Movie)
+        .where(Movie.user_id == current_user.id)
+        .order_by(Movie.rating.desc())
+    ).scalars()
     return render_template("mymovies.html", data=all_movies)
 
 @app.route("/", methods=["POST", "GET"])
 def home():
-    return render_template("index.html")
+    public_all_movies = db.session.execute(
+        db.select(Movie)
+        .order_by(Movie.rating.desc())
+    ).scalars()
+    return render_template("index.html", public_data=public_all_movies)
 
 # Route for Registering Users
 @app.route("/register", methods=["POST", "GET"])
@@ -211,7 +217,7 @@ def create_movie_entry():
         i = db.session.execute(db.select(Movie).where(Movie.title == api_data["original_title"])).scalar()
         new_movie_id = i.id
         flash("That Film has been added to your Library, Please add another", "info")
-        return redirect(url_for("mymovies"))
+        # return redirect(url_for("edit"))
     except IntegrityError:
         db.session.rollback()
         flash("That Film is already in your Library, Please try again.", "danger")
@@ -220,7 +226,7 @@ def create_movie_entry():
         db.session.rollback()
         print(f"An unexpected error occurred: {str(e)}")
         return redirect(url_for('mymovies', status=True))
-    # return redirect(url_for('edit', id=new_movie_id))
+    return redirect(url_for('edit', id=new_movie_id))
 
 # Allows user to edit data of existing film and/or newly added film.
 @app.route("/edit", methods=["GET", "POST"])
@@ -259,4 +265,4 @@ def profile(user_id):
 #  if the file is imported as a module, statment is False
 if __name__ == '__main__':
     # app refers to flask instance called above
-    app.run(debug=False)
+    app.run(debug=True)
