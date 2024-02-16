@@ -83,8 +83,9 @@ with app.app_context():
     db.create_all()
     # Not Best for Production builds *** Use Flask-Migrate / Alembic
 
-
+# Users Movie database page -----------------------------------------------------
 @app.route("/mymovies", methods=["POST", "GET"])
+@login_required
 def mymovies():
     all_movies = db.session.execute(
         db.select(Movie)
@@ -93,6 +94,7 @@ def mymovies():
     ).scalars()
     return render_template("mymovies.html", data=all_movies)
 
+# Home page, featuring public movies --------------------------------------------
 @app.route("/", methods=["POST", "GET"])
 def home():
     public_all_movies = db.session.execute(
@@ -101,14 +103,14 @@ def home():
     ).scalars()
     return render_template("index.html", public_data=public_all_movies)
 
-# Route for Registering Users
+# Route for Registering Users ---------------------------------------------------
 @app.route("/register", methods=["POST", "GET"])
 def register():
     # Create form variable (imported from forms.py)
     form = RegistrationForm()
     # Check IF POST and form correct
     if request.method == "POST" and form.validate():
-        # Check passwords match, return wardning if false
+        # Check passwords match, return warning if false
         if form.password.data != form.password_confirm.data:
             flash("Password do not match, Please try again", "danger")
             return redirect(url_for("register"))
@@ -149,10 +151,11 @@ def register():
     # Render registration form
     return render_template("register.html", form=form)
 
+# Login Route/Page ----------------------------------------------------------------
 @app.route('/login', methods=["POST", "GET"])
 def login():
     form = LoginForm()
-    # Ceck if user is already logged in, if so redirect (blocks access)
+    # Check if user is already logged in, if so redirect (blocks access)
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     # Check if user POST login details
@@ -175,15 +178,16 @@ def login():
             return redirect(url_for("login"))
     return render_template("login.html", form=form)
 
-# Logout route, Only access if logged in
+# Logout route, Only access if logged in -------------------------------------------
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
 
-# calls WTForm (AddMovie), passing data into API (filmsearch), renders results @ /select
+# calls WTForm (AddMovie), passing data into API (FilmSearch), renders results @ /select
 @app.route("/add", methods=["POST", "GET"])
+@login_required
 def add_movie():
     api_temp = MovieSearch()
     form = AddMovie()
@@ -196,6 +200,7 @@ def add_movie():
 
 # Uses existing API film ID to grab more info, then adds to db, returning errors w/ try/except
 @app.route("/get-movie-details", methods=["GET"])
+@login_required
 def create_movie_entry():
     movie_id = request.args.get('id')
     api_ext = MovieSearch()
@@ -230,6 +235,7 @@ def create_movie_entry():
 
 # Allows user to edit data of existing film and/or newly added film.
 @app.route("/edit", methods=["GET", "POST"])
+@login_required
 def edit():
     movie_id = request.args.get('id')
     form = RateMovieForm()
@@ -244,6 +250,7 @@ def edit():
 
 # Allows user to delete entry by db ID, removes all data
 @app.route("/delete", methods=["GET"])
+@login_required
 def delete():
     movie_id = request.args.get('id')
     movie_to_delete = db.get_or_404(Movie, movie_id)
@@ -257,12 +264,12 @@ def profile(user_id):
     # form = Create user form
     user_items = db.get_or_404(User, user_id)
     # Check if user is auth, if so move on
-    # ceck if form valie (user modifying data, place back into BD)
+    # Check if form Value (user modifying data, place back into BD)
     return render_template("userprofile.html")
 
 
 #  Checks to see IF file has been ran directly e.g. py main.py; True if so
-#  if the file is imported as a module, statment is False
+#  if the file is imported as a module, statement is False
 if __name__ == '__main__':
     # app refers to flask instance called above
     app.run(debug=True)
