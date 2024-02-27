@@ -1,4 +1,4 @@
-# Movie Library App
+![Alt text]("https://cdn.icon-icons.com/icons2/810/PNG/512/cinema_popcorn_icon-icons.com_66128.png" "Optional title") # Movie Library App
 Checkout this App live: https://movie-tracker-rhuj.onrender.com
 
 ## Description
