@@ -34,7 +34,7 @@ The App is coded using Python (Flask Framework), uses a SQL database (SQLAlchemy
 
 5. **User's Profile Page**: Featuring the date of registration, username, and options to edit profile data.
 
-    <img src="images/Profilesc.png" alt="User's Profile Page Screenshot" width="700" height="600">
+    <img src="images/ProfileSC.png" alt="User's Profile Page Screenshot" width="700" height="600">
 
 
 ## Installation
