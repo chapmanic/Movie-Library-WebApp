@@ -1,4 +1,4 @@
-![Alt text]("https://cdn.icon-icons.com/icons2/810/PNG/512/cinema_popcorn_icon-icons.com_66128.png" "Optional title") # Movie Library App
+# Movie Library App
 Checkout this App live: https://movie-tracker-rhuj.onrender.com
 
 ## Description
@@ -20,8 +20,10 @@ To install the Movie Library App, follow these steps:
 4. Run the application: python main.py
 ** Remember to create a .env file to store your variables **   
 
-## Usage
-After installation, visit http://localhost:5000 in your web browser to start using the app.
+## Live Screen Shots
+Here you can see the Home page, featuring publicly displayed Movie choices and login and sign-up functionally 
+![Example Image](images/indexSC.pngexample.png)
+
 
 ## Contributing
 Contributions to the Movie Library App are welcome. Please fork the repository, make your changes, and submit a pull request for review.
