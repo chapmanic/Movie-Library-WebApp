@@ -1,8 +1,11 @@
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from main import db
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship
+
+# Create Instance for DB; SQLAlchemy
+db = SQLAlchemy()
 
 # Create user DB here
 class User(UserMixin, db.Model):
@@ -14,7 +17,9 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(1000))
     last_name = db.Column(db.String(1000))
     is_admin = db.Column(db.Integer, default=0)
-    movies = relationship("Movie", back_poulates="user")
+    date = db.Column(db.String(250), nullable=False)
+    avatar_img = db.Column(db.String(250), nullable=True)
+    movies = relationship("Movie", back_populates="user")
 
 
 
@@ -27,7 +32,7 @@ class Movie(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     user = relationship("User", back_populates="movies")
     title = db.Column(db.String(80), unique=True, nullable=False)
-    year = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.String(30), nullable=True)
     description = db.Column(db.String(80), nullable=False)
     rating = db.Column(db.Float(5))
     ranking = db.Column(db.Integer)

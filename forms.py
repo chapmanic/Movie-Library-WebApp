@@ -13,7 +13,7 @@ class RegistrationForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name', validators=[DataRequired()])
     avatar_img = FileField("Profile Picture", validators=[
-        FileAllowed(["jpg", "png"], 'Images only')
+        FileAllowed(["jpg", "png", "jpeg"], 'Images only')
     ])
     submit = SubmitField('Register')
 

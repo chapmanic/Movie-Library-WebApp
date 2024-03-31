@@ -1,26 +1,27 @@
 from flask import Flask, render_template, redirect, url_for, request
 from forms import RegistrationForm, LoginForm, RateMovieForm, AddMovie
+from models import User, Movie, db
 from dotenv import load_dotenv
 import os
 from flask_bootstrap import Bootstrap5
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
+from flask_login import login_user, LoginManager, current_user, logout_user, login_required
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from filmsearch import MovieSearch
 from flask import flash
 from datetime import date
 
+
 # Load .env
 load_dotenv()
+
 # Creating an Instance of the Flask Class; Tracks configurations, URL rules, template locations, etc.
 app = Flask(__name__)
+
 # Set Secret Key for (CSRF) Cross-site request forgery
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-# Set DB Key
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQL_DATABASE')
+
 # Set image file location (.env) & Set MAX size for content
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max size
@@ -33,49 +34,17 @@ login_manager = LoginManager()
 login_manager.init_app(app)
     # Redirects to here, creates endpoint
 login_manager.login_view = "login"
-# Create Instance for DB; SQLAlchemy
-db = SQLAlchemy(app)
 
+# Set DB Key
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv('SQL_DATABASE')
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+    
 # Create a user_loader callback
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
-
-# Create user DB here
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-    first_name = db.Column(db.String(1000))
-    last_name = db.Column(db.String(1000))
-    is_admin = db.Column(db.Integer, default=0)
-    date = db.Column(db.String(250), nullable=False)
-    avatar_img = db.Column(db.String(250), nullable=True)
-    movies = relationship("Movie", back_populates="user")
-
-
-
-# Define class called "Movie", db.Model maps to table in SQLAch called "Model"
-class Movie(db.Model):
-    # Each attribute below represents a column wthin the database table.
-    # primary_key=True indicates uniquely ID; id is column name
-    __tablename__ = "movie"
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    user = relationship("User", back_populates="movies")
-    title = db.Column(db.String(80), unique=True, nullable=False)
-    year = db.Column(db.String(30), nullable=True)
-    description = db.Column(db.String(80), nullable=False)
-    rating = db.Column(db.Float(5))
-    ranking = db.Column(db.Integer)
-    review = db.Column(db.String(80))
-    img_url = db.Column(db.String(80), nullable=False)
-    # __repr__ defines how instances are represented as strings (supporting debug)
-    # Printing Movie as an Object returns the f sting below
-    def __repr__(self):
-        return f"< Movie {self.title} ranked: {self.ranking}>"
 
 # Sets app with context() method allowing globally accessible
 with app.app_context():
@@ -128,6 +97,7 @@ def register():
             last_name=form.last_name.data,
             password=hashed_password,
             date=date.today().strftime("%B %d, %Y"),
+            avatar_img="people-default.jpg",
         )
         # Save image to file, add name to User table
         if form.avatar_img.data:
