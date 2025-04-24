@@ -20,7 +20,7 @@ class Email:
             # Create MSG container
             msg = MIMEMultipart('alternative')
             msg["Subject"] = "Welcome to AccessMyCare!"
-            msg["From"] = "aden@accessmycare.co.uk"
+            msg["From"] = sender_email
             msg["To"] = recipient
             
             # Create body content & Record MIME type alongside content
