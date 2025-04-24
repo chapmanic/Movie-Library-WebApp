@@ -1,13 +1,36 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container">
-    <h1 class="heading">Select Movie</h1>
-    {% for title in data["results"] %}
-    <p>
-        <a href="{{ url_for('create_movie_entry', id=title['id']) }}"> {{ title["original_title"] }} - {{ title["release_date"] }}</a>
+  <h1 class="heading">Select Movie</h1>
+  {% for title in data["results"] %}
+  <div class="card">
+    <div
+      class="front"
+      style="background-image: url('https://image.tmdb.org/t/p/w600_and_h900_bestv2{{ title.poster_path }}');"
+    >
+      <p class="title">{{ title.original_title }}</p>
+    </div>
+    <div class="back">
+      <div>
+        <div class="title">
+          {{ title.original_title }}
+          <span class="release_date">({{ title.release_date }})</span>
+        </div>
+        <div class="rating">
+          <label>{{ title.popularity }}</label>
+          <i class="fas fa-star star"></i>
+        </div>
+        <p class="review">{{ title.vote_average }}</p>
+        <p class="overview">{{ title.overview }}</p>
+
+        <a
+          href="{{ url_for('create_movie_entry', id=title['id']) }}"
+          class="button"
+          >Add</a
+        >
         <input hidden="hidden" name="id" value=title["id"]>
-     </p>
-    {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock %}

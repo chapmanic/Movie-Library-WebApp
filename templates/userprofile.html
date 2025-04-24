@@ -8,13 +8,26 @@
         class="image d-flex flex-column justify-content-center align-items-center"
       >
         <img
-        src="{{ url_for('static', filename='avatars/' + current_user.avatar_img)}}"
-        alt="mdo"
-        width="133"
-        height="133"
-        class="rounded-circle"
+          {%
+          if
+          current_user.avatar_img
+          %}
+          src="{{ url_for('static', filename='avatars/' + current_user.avatar_img)}}"
+          {%
+          else
+          %}
+          src="{{ url_for('static', filename='avatars/' + 'people-default.jpg')}}"
+          {%
+          endif
+          %}
+          alt="mdo"
+          width="133"
+          height="133"
+          class="rounded-circle"
         />
-        <span class="name mt-3">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+        <span class="name mt-3"
+          >{{ current_user.first_name }} {{ current_user.last_name }}</span
+        >
         <span class="idd">@{{ current_user.username }}</span>
         <div
           class="d-flex flex-row justify-content-center align-items-center gap-2"

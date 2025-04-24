@@ -53,8 +53,6 @@
               height="41"
               class="rounded-circle"
             >
-              <use xlink:href="#bootstrap"></use>
-            </svg>
           </a>
 
           <ul
@@ -62,7 +60,9 @@
           >
             <li><a href="{{ url_for('home')}}" class="nav-link px-2 link-dark">Home</a></li>
             {% if current_user.is_authenticated %}
-            <li><a href="{{ url_for('mymovies') }}" class="nav-link px-2 link-dark">My Movies</a></li>{% endif %}
+            <li><a href="{{ url_for('mymovies') }}" class="nav-link px-2 link-dark">My Movies</a></li>
+            <li><a href="{{ url_for('add_movie') }}" class="nav-link px-2 link-dark">Search</a></li>
+            {% endif %}
           </ul>
           {% if current_user.is_authenticated %} {% if current_user.is_admin %}
           <li class="nav-item">
@@ -97,8 +97,6 @@
               class="dropdown-menu text-small"
               aria-labelledby="dropdownUser1"
             >
-              <!-- <li><a class="dropdown-item" href="#">New project...</a></li>
-              <li><a class="dropdown-item" href="#">Settings</a></li>-->
               <li><a class="dropdown-item" href="{{ url_for('profile', user_id=current_user.id) }}">Profile</a></li> 
               <li><hr class="dropdown-divider" /></li>
               <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>

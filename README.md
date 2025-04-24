@@ -1,10 +1,12 @@
 # Movie Library App
-This App is hosted live at: https://movie-tracker-rhuj.onrender.com
 
 ## Description
-This Movie Library App allows users to create and interact with a personalised movie collection. Users can search for movies using an API, adding them to their personalised library.
+This Movie Library App allows users to create and interact with a personalised movie collection. Users can search for movies using an API from api.themoviedb.org, adding them to their personalised library.
 
-The App is coded using Python (Flask Framework), uses a SQL database (SQLAlchemy), Bootstrap 5 (CSS Framework) and utilises an in API  from https://www.themoviedb.org/
+## Stack
+- Python (Flask Framework)
+- SQL database (SQLAlchemy)
+- Bootstrap 5 (CSS Framework)
 
 ## Features
 - Add new movies to the library (CRUD).
@@ -44,12 +46,3 @@ To install the Movie Library App, follow these steps:
 3. Initialise the database: python init_db.py
 4. Run the application: python main.py
 ** Remember to create a .env file to store your variables **   
-
-## Contributing
-Contributions to the Movie Library App are welcome. Please fork the repository, make your changes, and submit a pull request for review.
-
-## License
-This project is licensed under the [MIT License](LICENSE).
-
-## Contact
-For questions or suggestions, please contact aden@accessmycare.co.uk.

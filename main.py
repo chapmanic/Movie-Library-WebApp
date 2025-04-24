@@ -1,15 +1,15 @@
 from flask import Flask, render_template, redirect, url_for, request
-from forms import RegistrationForm, LoginForm, RateMovieForm, AddMovie
-from models import User, Movie, db
 from dotenv import load_dotenv
-import os
 from flask_bootstrap import Bootstrap5
 from flask_login import login_user, LoginManager, current_user, logout_user, login_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from filmsearch import MovieSearch
 from flask import flash
+from forms import RegistrationForm, LoginForm, RateMovieForm, AddMovie
+from models import User, Movie, db
+import os
+from filmsearch import MovieSearch
 from datetime import date
 
 
@@ -77,6 +77,9 @@ def home():
 def register():
     # Create form variable (imported from forms.py)
     form = RegistrationForm()
+    # Check if users is authenticated, If so redirect
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     # Check IF POST and form correct
     if request.method == "POST" and form.validate():
         # Check passwords match, return warning if false
